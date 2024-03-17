@@ -5,6 +5,9 @@ from MAML.sine_task_generator import SineData, sample_shot
 from MAML.model import Model
 from MAML.test import eval
 import os
+import copy
+
+
 
 
 EPOCH_IN = 8
@@ -20,19 +23,22 @@ LR_META = 0.01
 loss_func = keras.losses.MeanSquaredError()
 data = SineData(N_CURVE, N_POINT)
 test_tasks = data.get_test_tasks()
-meta_path = "training/maml.ckpt"
-normal_path = "training/normal_maml.ckpt"
+meta_path = "training/maml.weights.h5"
+normal_path = "training/normal_maml.weights.h5"
 
 
 def train():
     model = Model()
     model.build((None, 1))
     meta_w = model.get_weights()
+    print(meta_w)
     model.compile(optimizer=keras.optimizers.SGD(LR_INNER), loss=loss_func)
 
     for ep in range(EPOCH_OUT):
         tasks = data.sample_tasks(N_TASK)
-        weights = np.copy(meta_w)
+        #weights = np.copy(meta_w)
+        weights = copy.deepcopy(meta_w)
+        print(weights)
 
         for task in tasks:
             # inner update
@@ -75,8 +81,8 @@ def normal_train():
     model.save_weights(normal_path)
 
 
-# train()
-# normal_train()
+#train()
+#normal_train()
 eval(
     meta_path=meta_path,
     normal_path=normal_path,
